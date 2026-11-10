@@ -1,0 +1,15 @@
+[workspace]
+resolver = "3"
+members = ["explicit_binding_types", "file_length", "tests_outside_src"]
+
+[workspace.package]
+license = "MIT"
+repository = "https://github.com/A-Box-of-Scraps/abos-dylint-rules"
+rust-version = "1.101"
+edition = "2024"
+publish = false
+
+[workspace.dependencies]
+dylint_linting = "=6.3.2"
+dylint_testing = "=6.3.2"
+tempfile = "3"
