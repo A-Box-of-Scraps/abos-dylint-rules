@@ -52,7 +52,7 @@ fn obvious<'tcx>(cx: &LateContext<'tcx>, expr: &'tcx Expr<'tcx>) -> bool {
 		ExprKind::Lit(_) | ExprKind::Cast(..) | ExprKind::Type(..) => true,
 		ExprKind::Tup(items) | ExprKind::Array(items) => items.iter().all(|item| obvious(cx, item)),
 		ExprKind::AddrOf(_, _, inner) | ExprKind::Unary(UnOp::Neg | UnOp::Not, inner) => obvious(cx, inner),
-		ExprKind::Struct(ref path, ..) => explicit_adt_path(cx, expr, path),
+		ExprKind::Struct(path, ..) => explicit_adt_path(cx, expr, path),
 		ExprKind::Call(callee, _) => {
 			let ExprKind::Path(QPath::TypeRelative(owner, method)) = callee.kind else {
 				return false;

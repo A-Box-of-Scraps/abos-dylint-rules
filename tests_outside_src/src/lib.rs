@@ -52,36 +52,36 @@ impl EarlyLintPass for TestsOutsideSrc {
 			.iter()
 			.find(|attr| attr.has_name(sym::path))
 			.and_then(Attribute::value_str);
-		if matches!(kind, ModKind::Loaded(_, Inline::Yes, _)) {
-			if let Some(path) = path {
-				directory.push(path.as_str());
-			} else {
-				let crate_source = cx
-					.sess()
-					.local_crate_source_file()
-					.and_then(|file| file.local_path()?.canonicalize().ok());
-				if self.inline_directories.is_empty()
-					&& self.file_has_path != Some(true)
-					&& crate_source.as_ref() != Some(&source)
-					&& let Some(stem) = source.file_stem()
-					&& stem != "mod"
-				{
-					directory.push(stem);
-				}
-				directory.push(name.as_str());
+		if !matches!(kind, ModKind::Loaded(_, Inline::Yes, _)) {
+			let Some(path) = path else { return };
+			// Resolve the file, not a textual substring such as "tests/../src/".
+			if directory
+				.join(path.as_str())
+				.canonicalize()
+				.is_ok_and(|target| target.starts_with(root.join("tests")))
+			{
+				self.allowed_attributes.extend(item.attrs.iter().map(|attr| attr.span));
 			}
-			self.inline_directories.push((item.span, directory));
 			return;
 		}
-		let Some(path) = path else { return };
-		// Resolve the file, not a textual substring such as "tests/../src/".
-		if directory
-			.join(path.as_str())
-			.canonicalize()
-			.is_ok_and(|target| target.starts_with(root.join("tests")))
-		{
-			self.allowed_attributes.extend(item.attrs.iter().map(|attr| attr.span));
+		if let Some(path) = path {
+			directory.push(path.as_str());
+		} else {
+			let crate_source = cx
+				.sess()
+				.local_crate_source_file()
+				.and_then(|file| file.local_path()?.canonicalize().ok());
+			if self.inline_directories.is_empty()
+				&& self.file_has_path != Some(true)
+				&& crate_source.as_ref() != Some(&source)
+				&& let Some(stem) = source.file_stem()
+				&& stem != "mod"
+			{
+				directory.push(stem);
+			}
+			directory.push(name.as_str());
 		}
+		self.inline_directories.push((item.span, directory));
 	}
 
 	fn check_item_post(&mut self, _: &EarlyContext<'_>, item: &Item) {

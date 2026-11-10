@@ -2,8 +2,8 @@ use std::fs;
 use std::path::Path;
 
 #[test]
-fn ui() {
-	let temporary = tempfile::Builder::new().prefix("file-length-").tempdir().unwrap();
+fn ui() -> std::io::Result<()> {
+	let temporary = tempfile::Builder::new().prefix("file-length-").tempdir()?;
 	let fixtures = Path::new(env!("CARGO_MANIFEST_DIR")).join("ui");
 	// Keep the checked-in fixtures readable; pad physical files only for the UI run.
 	for (name, lines, terminated) in [
@@ -29,8 +29,8 @@ fn ui() {
 			_ => name,
 		});
 		let target = temporary.path().join(name);
-		fs::create_dir_all(target.parent().unwrap()).unwrap();
-		let mut content = fs::read_to_string(&source).unwrap();
+		fs::create_dir_all(target.parent().expect("fixture path has a temporary parent directory"))?;
+		let mut content = fs::read_to_string(&source)?;
 		assert!(lines == 0 || content.lines().count() <= lines);
 		for _ in content.lines().count()..lines {
 			content.push_str(if name == "auxiliary/blank.rs" {
@@ -45,13 +45,14 @@ fn ui() {
 		if name == "crlf.rs" {
 			content = content.replace('\n', "\r\n");
 		}
-		fs::write(&target, content).unwrap();
+		fs::write(&target, content)?;
 		let snapshot = source.with_extension("stderr");
 		if snapshot.exists() {
-			fs::copy(snapshot, target.with_extension("stderr")).unwrap();
+			fs::copy(snapshot, target.with_extension("stderr"))?;
 		}
 	}
 	dylint_testing::ui_test(env!("CARGO_PKG_NAME"), temporary.path());
+	Ok(())
 }
 
 #[test]

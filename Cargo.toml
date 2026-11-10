@@ -13,3 +13,24 @@ publish = false
 dylint_linting = "=6.3.2"
 dylint_testing = "=6.3.2"
 tempfile = "3"
+
+[workspace.lints.rust]
+unsafe_code = "deny"
+unsafe_op_in_unsafe_fn = "deny"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }
+cognitive_complexity = "warn"
+excessive_nesting = "warn"
+too_many_lines = "warn"
+too_many_arguments = "warn"
+dbg_macro = "warn"
+todo = "warn"
+unimplemented = "warn"
+undocumented_unsafe_blocks = "warn"
+unwrap_used = "warn"
+allow_attributes_without_reason = "warn"
+let_underscore_must_use = "warn"
+exit = "warn"
